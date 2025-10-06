@@ -1,0 +1,283 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id          String     @id @default(cuid())
+  email       String     @unique
+  password    String
+  firstName   String
+  lastName    String
+  role        UserRole
+  status      UserStatus @default(ACTIVE)
+  studentId   String?    @unique
+  phoneNumber String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  orders     Order[]
+  payments   Payment[]
+  reports    Report[]
+  systemLogs SystemLog[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  STUDENT
+  CANTEEN_STAFF
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+// Menu Management
+model MenuItem {
+  id                  String               @id @default(cuid())
+  name                String
+  description         String
+  price               Float
+  category            MenuItemCategory
+  status              MenuItemStatus       @default(AVAILABLE)
+  imageUrl            String?
+  preparationTime     Int // in minutes
+  ingredients         String[]
+  allergens           String[]
+  dietaryRestrictions DietaryRestriction[]
+  stockQuantity       Int?
+  isSpicy             Boolean              @default(false)
+  isPopular           Boolean              @default(false)
+  isNew               Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  // Nutritional Information
+  calories      Int?
+  protein       Float?
+  carbohydrates Float?
+  fat           Float?
+  fiber         Float?
+  sugar         Float?
+  sodium        Float?
+
+  // Relations
+  orderItems OrderItem[]
+
+  @@map("menu_items")
+}
+
+enum MenuItemCategory {
+  MAIN_COURSE
+  APPETIZER
+  DESSERT
+  BEVERAGE
+  SNACK
+  SIDE_DISH
+}
+
+enum MenuItemStatus {
+  AVAILABLE
+  OUT_OF_STOCK
+  DISCONTINUED
+  COMING_SOON
+}
+
+enum DietaryRestriction {
+  VEGETARIAN
+  VEGAN
+}
+
+// System Logging
+model SystemLog {
+  id        String   @id @default(cuid())
+  userId    String
+  logType   LogType
+  details   Json
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("system_logs")
+}
+
+enum LogType {
+  USER_LOGIN
+  USER_LOGOUT
+  USER_REGISTERED
+  USER_UPDATED
+  USER_DELETED
+  ORDER_CREATED
+  ORDER_UPDATED
+  ORDER_DELETED
+  PAYMENT_PROCESSED
+  MENU_UPDATED
+  GLUTEN_FREE
+  DAIRY_FREE
+  NUT_FREE
+  HALAL
+  KOSHER
+}
+
+// Order Management
+model Order {
+  id                   String        @id @default(cuid())
+  orderNumber          String        @unique
+  userId               String
+  totalAmount          Float
+  status               OrderStatus   @default(PENDING)
+  priority             OrderPriority @default(NORMAL)
+  paymentStatus        PaymentStatus @default(PENDING)
+  paymentId            String?
+  estimatedReadyTime   DateTime?
+  actualReadyTime      DateTime?
+  queuePosition        Int?
+  specialInstructions  String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  // Relations
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items    OrderItem[]
+  payments Payment[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id                  String   @id @default(cuid())
+  orderId             String
+  menuItemId          String
+  quantity            Int
+  price               Float
+  specialInstructions String?
+  createdAt           DateTime @default(now())
+
+  // Relations
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@map("order_items")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderPriority {
+  NORMAL
+  HIGH
+  URGENT
+}
+
+// Payment Management
+model Payment {
+  id                  String              @id @default(cuid())
+  orderId             String
+  amount              Float
+  method              PaymentMethod
+  status              PaymentStatus       @default(PENDING)
+  transactionId       String?
+  gatewayResponse     Json?
+  mobileMoneyProvider MobileMoneyProvider?
+  phoneNumber         String?
+  failureReason       String?
+  processedAt         DateTime?
+  refundedAt          DateTime?
+  refundAmount        Float?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  // Relations
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+  userId String
+
+  @@map("payments")
+}
+
+enum PaymentMethod {
+  MOBILE_MONEY
+  CASH
+  CARD
+  STUDENT_CARD
+  WALLET
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum MobileMoneyProvider {
+  MTN
+  AIRTEL
+  VODAFONE
+  TIGO
+}
+
+// Reporting and Analytics
+model Report {
+  id          String     @id @default(cuid())
+  type        ReportType
+  title       String
+  description String?
+  data        Json
+  generatedBy String
+  createdAt   DateTime   @default(now())
+
+  // Relations
+  user User @relation(fields: [generatedBy], references: [id])
+
+  @@map("reports")
+}
+
+enum ReportType {
+  SALES
+  ORDERS
+  PAYMENTS
+  MENU
+  INVENTORY
+}
+
+// System Logs
+model SystemLog {
+  id        String    @id @default(cuid())
+  level     LogLevel
+  message   String
+  context   Json?
+  userId    String?
+  createdAt DateTime  @default(now())
+
+  @@map("system_logs")
+}
+
+enum LogLevel {
+  INFO
+  WARN
+  ERROR
+  DEBUG
+}
