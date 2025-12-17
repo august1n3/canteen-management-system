@@ -28,7 +28,6 @@ model User {
   orders     Order[]
   payments   Payment[]
   reports    Report[]
-  systemLogs SystemLog[]
 
   @@map("users")
 }
@@ -102,18 +101,7 @@ enum DietaryRestriction {
 }
 
 // System Logging
-model SystemLog {
-  id        String   @id @default(cuid())
-  userId    String
-  logType   LogType
-  details   Json
-  createdAt DateTime @default(now())
-  
-  // Relations
-  user      User     @relation(fields: [userId], references: [id])
 
-  @@map("system_logs")
-}
 
 enum LogType {
   USER_LOGIN
