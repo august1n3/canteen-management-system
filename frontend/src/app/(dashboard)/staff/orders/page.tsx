@@ -278,8 +278,8 @@ const OrderManagement: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{order.student.name}</div>
-                    <div className="text-sm text-gray-500">{order.student.email}</div>
+                    <div className="text-sm text-gray-900">{order.user.firstname + ' ' + order.user.lastname}</div>
+                    <div className="text-sm text-gray-500">{order.user.email}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
@@ -319,7 +319,7 @@ const OrderManagement: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      ${order.totalPrice.toFixed(2)}
+                      Tzs.{order.totalAmount.toFixed(2)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -396,11 +396,11 @@ const OrderManagement: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-600">Customer</label>
-                    <p className="text-sm text-gray-900">{selectedOrder.student.name}</p>
+                    <p className="text-sm text-gray-900">{selectedOrder.user.name}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Total</label>
-                    <p className="text-sm text-gray-900">${selectedOrder.totalPrice.toFixed(2)}</p>
+                    <p className="text-sm text-gray-900">Tzs.{selectedOrder.totalAmount}</p>
                   </div>
                 </div>
 
@@ -417,7 +417,7 @@ const OrderManagement: React.FC = () => {
                         </div>
                         <div className="text-right">
                           <div>Qty: {item.quantity}</div>
-                          <div>${(item.price * item.quantity).toFixed(2)}</div>
+                          <div>Tzs.{(item.price * item.quantity).toFixed(2)}</div>
                         </div>
                       </div>
                     ))}

@@ -89,6 +89,11 @@ export const menuApi = {
     isAvailable?: boolean;
   }) => api.patch(`/api/menu/${id}/availability`, data),
   
+  updateAvailability: (id: string, data: {
+    stockLevel?: number;
+    isAvailable?: boolean;
+  }) => api.patch(`/api/menu/${id}/availability`, data),
+  
   bulkUpdateAvailability: (updates: Array<{
     menuItemId: string;
     stockLevel?: number;

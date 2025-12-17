@@ -326,7 +326,7 @@ const KitchenDashboard: React.FC = () => {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Total Amount</label>
-                    <p className="text-sm text-gray-900">${selectedOrder.totalAmount?.toFixed(2)}</p>
+                    <p className="text-sm text-gray-900">Tzs.{selectedOrder.totalAmount?.toFixed(2)}</p>
                   </div>
                   
                   <div>

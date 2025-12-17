@@ -129,7 +129,7 @@ const Cart: React.FC = () => {
           <div className="mt-6 bg-gray-50 rounded-lg p-4">
             <div className="flex justify-between items-center text-lg font-semibold">
               <span>Total:</span>
-              <span>${getTotalPrice().toFixed(2)}</span>
+              <span>Tzs.{getTotalPrice().toFixed(2)}</span>
             </div>
           </div>
 

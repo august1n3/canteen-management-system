@@ -38,27 +38,28 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     switch (user.role) {
       case 'STUDENT':
         return [
-          { name: 'Menu', href: '/student/', icon: HomeIcon },
+          { name: 'Menu', href: '/student', icon: HomeIcon },
           { name: 'Cart', href: '/student/cart', icon: ShoppingCartIcon },
           { name: 'My Orders', href: '/student/history', icon: ClipboardListIcon },
-          { name: 'Track Order', href: '/student/order-tracking', icon: ClipboardListIcon },
+          { name: 'Track Order', href: '/student/track', icon: ClipboardListIcon },
         ];
       case 'STAFF':
         return [
-          { name: 'Dashboard', href: '/Staff/Dashboard', icon: HomeIcon },
-          { name: 'Orders', href: '/Staff/OrderManagement', icon: ClipboardListIcon },
-          { name: 'Menu Management', href: '/Staff/MenuManagement', icon: CogIcon },
-          { name: 'Payments', href: '/Staff/PaymentProcessing', icon: ChartBarIcon },
+          { name: 'Dashboard', href: '/staff', icon: HomeIcon },
+          { name: 'Orders', href: '/staff/orders', icon: ClipboardListIcon },
+          { name: 'Menu Management', href: '/staff/menu', icon: CogIcon },
+          { name: 'Payments', href: '/staff/payments', icon: ChartBarIcon },
         ];
       case 'KITCHEN':
         return [
-          { name: 'Kitchen Dashboard', href: '/Kitchen/KitchenDashboard', icon: HomeIcon },
-          { name: 'Order Queue', href: '/Kitchen/OrderQueue', icon: ClipboardListIcon },
+          { name: 'Kitchen Dashboard', href: '/kitchen', icon: HomeIcon },
         ];
       case 'ADMIN':
         return [
-          { name: 'Dashboard', href: '/Admin/AdminDashboard', icon: HomeIcon },
-          { name: 'User Management', href: '/Admin/UserManagement', icon: CogIcon },
+          { name: 'Dashboard', href: '/admin', icon: HomeIcon },
+          { name: 'Users', href: '/admin/users', icon: CogIcon },
+          { name: 'Reports', href: '/admin/reports', icon: ChartBarIcon },
+          { name: 'Inventory', href: '/admin/inventory', icon: ClipboardListIcon },
         ];
       default:
         return [];

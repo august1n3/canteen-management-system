@@ -22,7 +22,7 @@ interface CartContextType {
   getCartItem: (menuItemId: string) => CartItem | undefined;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+export const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_KEY = 'canteen_cart';
 

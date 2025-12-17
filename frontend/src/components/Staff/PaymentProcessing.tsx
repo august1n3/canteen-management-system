@@ -410,7 +410,7 @@ const PaymentProcessing: React.FC = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Amount</label>
-                    <p className="text-sm text-gray-900">${selectedPayment.amount.toFixed(2)}</p>
+                    <p className="text-sm text-gray-900">Tzs.{selectedPayment.amount.toFixed(2)}</p>
                   </div>
                 </div>
 
