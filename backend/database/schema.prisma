@@ -36,6 +36,7 @@ enum UserRole {
   STUDENT
   CANTEEN_STAFF
   ADMIN
+  KITCHEN
 }
 
 enum UserStatus {
@@ -135,6 +136,7 @@ model Order {
   actualReadyTime      DateTime?
   queuePosition        Int?
   specialInstructions  String?
+  completedAt          DateTime?
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt
 

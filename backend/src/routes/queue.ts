@@ -12,11 +12,11 @@ router.get('/status', async (req, res, next) => {
   try {
     const { limit } = req.query;
 
-    // Get active orders in queue (confirmed, preparing, ready)
+    // Get active orders in queue (pending, confirmed, preparing, ready)
     const queueOrders = await prisma.order.findMany({
       where: {
         status: {
-          in: ["CONFIRMED", "PREPARING", "READY"]
+          in: ["PENDING", "CONFIRMED", "PREPARING", "READY"]
         }
       },
       include: {
@@ -51,6 +51,7 @@ router.get('/status', async (req, res, next) => {
     // Calculate queue statistics
     const queueStats = {
       totalOrders: queueOrders.length,
+      pendingOrders: queueOrders.filter((o) => o.status === "PENDING").length,
       confirmedOrders: queueOrders.filter((o) => o.status === "CONFIRMED").length,
       preparingOrders: queueOrders.filter((o) => o.status === "PREPARING").length,
       readyOrders: queueOrders.filter((o) => o.status === "READY").length,
@@ -118,6 +119,7 @@ router.get('/position/:orderId', async (req, res, next) => {
     }
 
     if (![
+      "PENDING",
       "CONFIRMED",
       "PREPARING",
       "READY"
@@ -136,7 +138,7 @@ router.get('/position/:orderId', async (req, res, next) => {
     const ordersAhead = await prisma.order.count({
       where: {
         status: {
-          in: ["CONFIRMED", "PREPARING", "READY"]
+          in: ["PENDING", "CONFIRMED", "PREPARING", "READY"]
         },
         OR: [
           // Orders with higher priority status (lower index in statusPriority array)
@@ -407,8 +409,8 @@ router.post('/cleanup',
 // Helper functions
 
 function getStatusesAhead(currentStatus: OrderStatus): OrderStatus[] {
-  // Define status priority order
-  const statusPriority = ["CONFIRMED", "PREPARING", "READY"];
+  // Define status priority order (READY is farthest along, PENDING is newest)
+  const statusPriority = ["PENDING", "CONFIRMED", "PREPARING", "READY"];
   const currentIndex = statusPriority.indexOf(currentStatus);
   if (currentIndex === -1) return [];
   return statusPriority.slice(0, currentIndex) as OrderStatus[];

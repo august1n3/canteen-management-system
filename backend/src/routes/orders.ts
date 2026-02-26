@@ -320,7 +320,6 @@ router.patch('/:id/status',
         where: { id },
         data: {
           status: status as OrderStatus,
-          updatedAt: new Date(),
           ...(status === OrderStatus.COMPLETED && {
             completedAt: new Date()
           })

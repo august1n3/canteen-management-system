@@ -143,7 +143,7 @@ const PaymentProcessing: React.FC = () => {
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-green-50 rounded-lg p-3 text-center">
               <div className="text-2xl font-bold text-green-600">
-                ${payments.filter((p: any) => p.status === 'completed')
+                TZS {payments.filter((p: any) => p.status === 'completed')
                   .reduce((sum: number, p: any) => sum + p.amount, 0)
                   .toFixed(2)}
               </div>
@@ -151,7 +151,7 @@ const PaymentProcessing: React.FC = () => {
             </div>
             <div className="bg-yellow-50 rounded-lg p-3 text-center">
               <div className="text-2xl font-bold text-yellow-600">
-                ${payments.filter((p: any) => p.status === 'pending')
+                TZS {payments.filter((p: any) => p.status === 'pending')
                   .reduce((sum: number, p: any) => sum + p.amount, 0)
                   .toFixed(2)}
               </div>
@@ -159,7 +159,7 @@ const PaymentProcessing: React.FC = () => {
             </div>
             <div className="bg-red-50 rounded-lg p-3 text-center">
               <div className="text-2xl font-bold text-red-600">
-                ${payments.filter((p: any) => p.status === 'failed')
+                TZS {payments.filter((p: any) => p.status === 'failed')
                   .reduce((sum: number, p: any) => sum + p.amount, 0)
                   .toFixed(2)}
               </div>
@@ -299,7 +299,7 @@ const PaymentProcessing: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      ${payment.amount.toFixed(2)}
+                      TZS {payment.amount.toFixed(2)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

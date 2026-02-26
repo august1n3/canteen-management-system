@@ -127,7 +127,6 @@ export const orderApi = {
   
   updateOrderStatus: (id: string, data: {
     status: string;
-    notes?: string;
   }) => api.patch(`/api/orders/${id}/status`, data, createProtectedRequest({})),
   
   cancelOrder: (id: string, reason?: string) =>

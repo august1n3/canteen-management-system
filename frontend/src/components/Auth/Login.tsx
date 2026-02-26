@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
 import { LockClosedIcon } from '@heroicons/react/outline';
-import { cookies } from 'next/headers';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,9 +16,16 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError('');
 
+    const ROLE_DASHBOARD: Record<string, string> = {
+      STUDENT: '/student',
+      CANTEEN_STAFF: '/staff',
+      KITCHEN: '/kitchen',
+      ADMIN: '/admin',
+    };
+
     try {
-      await login(email, password);
-      router.push('/student/menu');
+      const user = await login(email, password);
+      router.push(ROLE_DASHBOARD[user.role] ?? '/student');
     } catch (err: any) {
       setError(err.message);
     }

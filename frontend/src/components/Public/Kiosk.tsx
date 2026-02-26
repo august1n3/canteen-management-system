@@ -163,7 +163,7 @@ const Kiosk: React.FC = () => {
             <h2 className="text-3xl mb-4">Order #{orderResult?.id?.slice(-8)}</h2>
             <p className="text-xl mb-2">{customerInfo.name}</p>
             <p className="text-lg mb-4">Student ID: {customerInfo.studentId}</p>
-            <p className="text-2xl font-bold">Total: ${getTotalPrice().toFixed(2)}</p>
+            <p className="text-2xl font-bold">Total: TZS {getTotalPrice().toFixed(2)}</p>
           </div>
           <p className="text-xl mb-8">Please wait for your order number to be called</p>
           <button

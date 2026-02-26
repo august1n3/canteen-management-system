@@ -4,19 +4,41 @@ import type { NextRequest } from 'next/server';
 // Define route patterns
 const PUBLIC_ROUTES = ['/', '/public', '/kiosk'];
 const AUTH_ROUTES = ['/auth/login', '/auth/register'];
-const PROTECTED_ROUTES = {
+const PROTECTED_ROUTES: Record<string, string[]> = {
   STUDENT: ['/student'],
-  STAFF: ['/staff'],
+  CANTEEN_STAFF: ['/staff'],
   KITCHEN: ['/kitchen'],
   ADMIN: ['/admin'],
 };
+
+/** Decode a JWT payload without verifying the signature (role-based redirect only). */
+function getTokenPayload(token: string): { userId?: string; role?: string } | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = Buffer.from(parts[1], 'base64url').toString('utf-8');
+    return JSON.parse(payload);
+  } catch {
+    return null;
+  }
+}
+
+function getRoleDashboard(role: string): string {
+  const map: Record<string, string> = {
+    STUDENT: '/student',
+    CANTEEN_STAFF: '/staff',
+    KITCHEN: '/kitchen',
+    ADMIN: '/admin',
+  };
+  return map[role] ?? '/student';
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('token')?.value;
 
   // Check if route is public (no authentication required)
-  const isPublicRoute = PUBLIC_ROUTES.some(route => 
+  const isPublicRoute = PUBLIC_ROUTES.some(route =>
     pathname === route || pathname.startsWith(`${route}/`)
   );
 
@@ -28,12 +50,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Handle auth routes
+  // Handle auth routes — redirect already-authenticated users to their dashboard
   if (isAuthRoute) {
-    // Redirect authenticated users to their dashboard
     if (token) {
-      // You could decode the token here to redirect to role-specific dashboard
-      return NextResponse.redirect(new URL('/student', request.url));
+      const payload = getTokenPayload(token);
+      const dashboard = payload?.role ? getRoleDashboard(payload.role) : '/student';
+      return NextResponse.redirect(new URL(dashboard, request.url));
     }
     return NextResponse.next();
   }
@@ -43,19 +65,24 @@ export function middleware(request: NextRequest) {
     .flat()
     .some(route => pathname.startsWith(route));
 
-  // Protect dashboard routes - require authentication
   if (isProtectedRoute) {
+    // Not logged in — send to login with a redirect param
     if (!token) {
-      // Store the attempted URL to redirect after login
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
 
-    // TODO: Add role-based authorization
-    // Decode JWT token and verify user has permission for this route
-    // For now, we'll let the client-side handle role verification
-    
+    // Logged in — enforce role-based access
+    const payload = getTokenPayload(token);
+    if (payload?.role) {
+      const allowedRoutes = PROTECTED_ROUTES[payload.role] ?? [];
+      const hasAccess = allowedRoutes.some(route => pathname.startsWith(route));
+      if (!hasAccess) {
+        return NextResponse.redirect(new URL(getRoleDashboard(payload.role), request.url));
+      }
+    }
+
     return NextResponse.next();
   }
 

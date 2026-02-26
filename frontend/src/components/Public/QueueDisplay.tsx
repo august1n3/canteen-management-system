@@ -59,6 +59,8 @@ const QueueDisplay: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'PENDING':
+        return 'bg-gray-500 text-white';
       case 'CONFIRMED':
         return 'bg-blue-500 text-white';
       case 'PREPARING':
@@ -124,12 +126,18 @@ const QueueDisplay: React.FC = () => {
       {/* Stats Bar */}
       <div className="bg-gray-800 p-4">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-5 gap-8 text-center">
+            <div>
+              <div className="text-3xl font-bold text-gray-400">
+                {stats.pendingOrders || 0}
+              </div>
+              <div className="text-gray-300">Pending</div>
+            </div>
             <div>
               <div className="text-3xl font-bold text-blue-400">
-                {stats.totalOrders || 0}
+                {stats.confirmedOrders || 0}
               </div>
-              <div className="text-gray-300">Total Orders</div>
+              <div className="text-gray-300">Confirmed</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-yellow-400">
@@ -237,8 +245,8 @@ const QueueDisplay: React.FC = () => {
                 </div>
               )}
 
-              {/* Waiting Orders Section */}
-              {stats.confirmedOrders > 0 && (
+              {/* Waiting / Confirmed Orders Section */}
+              {(stats.confirmedOrders > 0 || stats.pendingOrders > 0) && (
                 <div>
                   <div className="flex items-center mb-6">
                     <ClockIcon className="h-8 w-8 text-blue-400 mr-3" />
@@ -248,12 +256,14 @@ const QueueDisplay: React.FC = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                     {queueItems
-                      .filter((order: any) => order.status === 'CONFIRMED')
+                      .filter((order: any) => order.status === 'PENDING' || order.status === 'CONFIRMED')
                       .slice(0, 10) // Show max 10 waiting orders
                       .map((order: any) => (
                         <div
                           key={order.id}
-                          className="bg-blue-600 rounded-lg p-3 text-center"
+                          className={`rounded-lg p-3 text-center ${
+                            order.status === 'PENDING' ? 'bg-gray-600' : 'bg-blue-600'
+                          }`}
                         >
                           <div className="text-3xl font-bold mb-1">
                             #{order.queuePosition}
@@ -261,8 +271,10 @@ const QueueDisplay: React.FC = () => {
                           <div className="text-sm font-semibold">
                             {order.customerName}
                           </div>
-                          <div className="text-blue-200 text-xs">
-                            Est. {Math.max(order.waitTime, 0)}m
+                          <div className={`text-xs mt-1 ${
+                            order.status === 'PENDING' ? 'text-gray-300' : 'text-blue-200'
+                          }`}>
+                            {order.status === 'PENDING' ? 'Awaiting confirmation' : `Est. ${Math.max(order.waitTime, 0)}m`}
                           </div>
                         </div>
                       ))}
@@ -288,6 +300,10 @@ const QueueDisplay: React.FC = () => {
           </div>
           
           <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-gray-500 rounded"></div>
+              <span className="text-gray-300">Pending</span>
+            </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-blue-500 rounded"></div>
               <span className="text-gray-300">Waiting</span>

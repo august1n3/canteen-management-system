@@ -95,7 +95,7 @@ const Cart: React.FC = () => {
 
                   <div className="text-right">
                     <div className="font-semibold text-gray-900">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      TZS {(item.price * item.quantity).toFixed(2)}
                     </div>
                   </div>
 

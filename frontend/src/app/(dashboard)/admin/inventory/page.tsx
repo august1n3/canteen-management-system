@@ -39,11 +39,11 @@ export default function InventoryPage() {
   };
 
   const getLowStockItems = () => {
-    return items.filter((item: any) => item.stockLevel < 10);
+    return items.filter((item: any) => item.stockQuantity < 10);
   };
 
   const getOutOfStockItems = () => {
-    return items.filter((item: any) => item.stockLevel === 0 || !item.isAvailable);
+    return items.filter((item: any) => item.stockQuantity === 0 && !item.isAvailable);
   };
 
   return (
@@ -156,26 +156,26 @@ export default function InventoryPage() {
                     ) : (
                       <span
                         className={`text-sm font-medium ${
-                          item.stockLevel === 0
+                          item.stockQuantity === 0
                             ? 'text-red-600'
-                            : item.stockLevel < 10
+                            : item.stockQuantity < 10
                             ? 'text-yellow-600'
                             : 'text-green-600'
                         }`}
                       >
-                        {item.stockLevel}
+                        {item.stockQuantity}
                       </span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        item.isAvailable && item.stockLevel > 0
+                        item.isAvailable || item.stockQuantity > 0
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                       }`}
                     >
-                      {item.isAvailable && item.stockLevel > 0 ? 'Available' : 'Unavailable'}
+                      {item.isAvailable || item.stockQuantity > 0 ? 'Available' : 'Unavailable'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

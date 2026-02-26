@@ -91,7 +91,7 @@ const Dashboard: React.FC = () => {
     },
     {
       name: 'Today\'s Revenue',
-      value: `$${(paymentAnalytics?.data?.data?.totalRevenue || 0).toFixed(2)}`,
+      value: `TZS ${(paymentAnalytics?.data?.data?.totalRevenue || 0).toFixed(2)}`,
       change: '+8%',
       changeType: 'increase' as const,
       icon: CurrencyDollarIcon,
@@ -186,7 +186,7 @@ const Dashboard: React.FC = () => {
                         Order #{order.id.slice(-8)}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {order.user.name} • ${order.totalAmount.toFixed(2)}
+                        {order.user.name} • TZS {order.totalAmount.toFixed(2)}
                       </p>
                     </div>
                     <div className="text-right">

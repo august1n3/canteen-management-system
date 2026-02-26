@@ -21,13 +21,13 @@ const OrderQueue: React.FC = () => {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['kitchen-orders', filter],
-    queryFn: () => orderApi.getOrders(1, 100, filter === 'all' ? undefined : filter),
+    queryFn: () => orderApi.getOrders(1, 100, undefined, { status: filter === 'all' ? undefined : filter }),
     refetchInterval: 15000,
   });
 
   const updateOrderMutation = useMutation({
     mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
-      orderApi.updateOrderStatus(orderId, status as any),
+      orderApi.updateOrderStatus(orderId, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kitchen-orders'] });
       setSelectedOrder(null);
@@ -80,14 +80,16 @@ const OrderQueue: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-500';
-      case 'confirmed':
+      case 'PENDING':
+        return 'bg-gray-400';
+      case 'CONFIRMED':
         return 'bg-blue-500';
-      case 'preparing':
+      case 'PREPARING':
         return 'bg-orange-500';
-      case 'ready':
+      case 'READY':
         return 'bg-green-500';
+      case 'COMPLETED':
+        return 'bg-gray-600';
       default:
         return 'bg-gray-500';
     }
@@ -106,12 +108,14 @@ const OrderQueue: React.FC = () => {
 
   const getNextStatus = (currentStatus: string) => {
     switch (currentStatus) {
-      case 'pending':
-        return 'confirmed';
-      case 'confirmed':
-        return 'preparing';
-      case 'preparing':
-        return 'ready';
+      case 'PENDING':
+        return 'CONFIRMED';
+      case 'CONFIRMED':
+        return 'PREPARING';
+      case 'PREPARING':
+        return 'READY';
+      case 'READY':
+        return 'COMPLETED';
       default:
         return currentStatus;
     }
@@ -119,12 +123,14 @@ const OrderQueue: React.FC = () => {
 
   const getStatusAction = (status: string) => {
     switch (status) {
-      case 'pending':
+      case 'PENDING':
         return { label: 'Confirm Order', icon: CheckIcon };
-      case 'confirmed':
+      case 'CONFIRMED':
         return { label: 'Start Preparing', icon: PlayIcon };
-      case 'preparing':
+      case 'PREPARING':
         return { label: 'Mark Ready', icon: CheckIcon };
+      case 'READY':
+        return { label: 'Complete Order', icon: CheckIcon };
       default:
         return { label: 'Update', icon: CheckIcon };
     }
@@ -140,7 +146,7 @@ const OrderQueue: React.FC = () => {
     );
   }
 
-  if (error || !data?.data?.data) {
+  if (error || !data?.data?.data?.orders) {
     return (
       <div className="max-w-7xl mx-auto">
         <div className="text-center py-12">
@@ -152,7 +158,7 @@ const OrderQueue: React.FC = () => {
     );
   }
 
-  const orders = data.data.data;
+  const orders = data.data.data.orders;
   const filteredOrders = orders.filter((order: any) => {
     if (filter === 'all') return true;
     return order.status === filter;
@@ -184,7 +190,7 @@ const OrderQueue: React.FC = () => {
             <div className="bg-white rounded-lg shadow px-4 py-2">
               <div className="text-sm text-gray-600">Active Orders</div>
               <div className="text-2xl font-bold text-blue-600">
-                {orders.filter((o: any) => ['pending', 'confirmed', 'preparing'].includes(o.status)).length}
+                {orders.filter((o: any) => ['PENDING', 'CONFIRMED', 'PREPARING'].includes(o.status)).length}
               </div>
             </div>
           </div>
@@ -197,10 +203,12 @@ const OrderQueue: React.FC = () => {
           <nav className="-mb-px flex space-x-8 px-6">
             {[
               { key: 'all', label: 'All Orders' },
-              { key: 'pending', label: 'Pending' },
-              { key: 'confirmed', label: 'Confirmed' },
-              { key: 'preparing', label: 'Preparing' },
-              { key: 'ready', label: 'Ready' }
+              { key: 'PENDING', label: 'Pending' },
+              { key: 'CONFIRMED', label: 'Confirmed' },
+              { key: 'PREPARING', label: 'Preparing' },
+              { key: 'READY', label: 'Ready' },
+              { key: 'COMPLETED', label: 'Completed' }
+              
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -250,7 +258,7 @@ const OrderQueue: React.FC = () => {
                       <h3 className="text-lg font-semibold text-gray-900">
                         Order #{order.orderNumber}
                       </h3>
-                      <p className="text-sm text-gray-600">{order.student.name}</p>
+                      <p className="text-sm text-gray-600">{order.user?.firstName} {order.user?.lastName}</p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <div className={`w-3 h-3 rounded-full ${getStatusColor(order.status)}`}></div>
@@ -306,17 +314,18 @@ const OrderQueue: React.FC = () => {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-2">
-                    {order.status !== 'ready' && order.status !== 'completed' && (
+                    {order.status !== 'COMPLETED' && (
                       <button
                         onClick={() => handleStatusUpdate(order.id, getNextStatus(order.status))}
                         className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-md hover:bg-blue-700 flex items-center justify-center"
-                        disabled={updateOrderMutation.isPending}
+                        disabled={false}
                       >
                         <StatusIcon className="h-4 w-4 mr-1" />
                         {statusAction.label}
                       </button>
                     )}
-                    
+                     
+
                     <button
                       onClick={() => setSelectedOrder(order)}
                       className="bg-gray-200 text-gray-700 py-2 px-3 rounded-md hover:bg-gray-300"
@@ -359,7 +368,7 @@ const OrderQueue: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-600">Customer</label>
-                    <p className="text-sm text-gray-900">{selectedOrder.student.name}</p>
+                    <p className="text-sm text-gray-900">{selectedOrder.user?.firstName} {selectedOrder.user?.lastName}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Time Elapsed</label>
@@ -374,6 +383,12 @@ const OrderQueue: React.FC = () => {
                   <div className="space-y-2">
                     {selectedOrder.items.map((item: any, index: number) => (
                       <div key={index} className="p-3 bg-gray-50 rounded-md">
+                         <button
+                      onClick={() => handleStatusUpdate(selectedOrder.id, getNextStatus(selectedOrder.status))}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                      {getStatusAction(selectedOrder.status).label}
+                    </button>
                         <div className="flex justify-between items-start">
                           <div>
                             <span className="font-medium">{item.quantity}x {item.menuItem.name}</span>
@@ -392,6 +407,8 @@ const OrderQueue: React.FC = () => {
                   </div>
                 </div>
 
+                   
+               
                 {selectedOrder.specialInstructions && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Order Instructions</label>
@@ -402,15 +419,7 @@ const OrderQueue: React.FC = () => {
                 )}
 
                 <div className="flex justify-end space-x-3 pt-4">
-                  {selectedOrder.status !== 'ready' && selectedOrder.status !== 'completed' && (
-                    <button
-                      onClick={() => handleStatusUpdate(selectedOrder.id, getNextStatus(selectedOrder.status))}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                      disabled={updateOrderMutation.isPending}
-                    >
-                      {getStatusAction(selectedOrder.status).label}
-                    </button>
-                  )}
+                  
                   <button
                     onClick={() => setSelectedOrder(null)}
                     className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"

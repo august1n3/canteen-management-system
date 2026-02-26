@@ -43,7 +43,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           { name: 'My Orders', href: '/student/history', icon: ClipboardListIcon },
           { name: 'Track Order', href: '/student/track', icon: ClipboardListIcon },
         ];
-      case 'STAFF':
+      case 'CANTEEN_STAFF':
         return [
           { name: 'Dashboard', href: '/staff', icon: HomeIcon },
           { name: 'Orders', href: '/staff/orders', icon: ClipboardListIcon },

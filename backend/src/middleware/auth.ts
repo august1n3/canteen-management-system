@@ -81,7 +81,8 @@ export const requirePermission = (permission: string) => {
     const rolePermissions = {
       [UserRole.ADMIN]: [
         'manage_users', 'manage_menu', 'manage_orders', 'view_reports',
-        'manage_inventory', 'manage_queue', 'manage_payments'
+        'manage_inventory', 'manage_queue', 'manage_payments', 'update_order_status',
+        'view_orders', 'view_queue', 'process_payments', 'place_order', 'view_own_orders', 'track_order'
       ],
       [UserRole.CANTEEN_STAFF]: [
         'manage_orders', 'view_queue', 'process_payments', 'update_order_status'

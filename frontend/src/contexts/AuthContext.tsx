@@ -5,7 +5,7 @@ import { authApi } from '../services/api';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
   register: (userData: {
     email: string;
@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     initAuth();
   }, []);
 
-   const login = async (email: string, password: string): Promise<void> => {
+  const login = async (email: string, password: string): Promise<User> => {
     setLoading(true);
     try {
       const response = await authApi.login({ email, password });
@@ -55,7 +55,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const { user, token } = response.data.data;
 
         localStorage.setItem('token', token);
+        // Sync token to cookie so Next.js middleware can read it
+        document.cookie = `token=${token}; path=/; max-age=28800; SameSite=strict`;
         setUser(user);
+        return user;
       } else {
         throw new Error(response.data.error?.message || 'Login failed');
       }
@@ -77,6 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
 
       localStorage.removeItem('token');
+      // Clear the cookie so middleware stops treating the user as authenticated
+      document.cookie = 'token=; path=/; max-age=0';
       setUser(null);
       setLoading(false);
     }

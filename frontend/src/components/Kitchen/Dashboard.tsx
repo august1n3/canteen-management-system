@@ -35,7 +35,7 @@ const KitchenDashboard: React.FC = () => {
       orderId: string; 
       status: string; 
       notes?: string 
-    }) => orderApi.updateOrderStatus(orderId, { status, notes }),
+    }) => orderApi.updateOrderStatus(orderId, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kitchen-queue'] });
       setSelectedOrder(null);
@@ -88,12 +88,16 @@ const KitchenDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'PENDING':
+        return 'bg-gray-100 text-gray-800 border-gray-300';
       case 'CONFIRMED':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'PREPARING':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'READY':
         return 'bg-green-100 text-green-800 border-green-200';
+      case 'COMPLETED':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -135,7 +139,21 @@ const KitchenDashboard: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-md bg-gray-400">
+              <ClockIcon className="h-6 w-6 text-white" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500">Pending</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.pendingOrders || 0}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-md bg-blue-500">
@@ -173,6 +191,20 @@ const KitchenDashboard: React.FC = () => {
               <p className="text-sm font-medium text-gray-500">Ready</p>
               <p className="text-2xl font-semibold text-gray-900">
                 {stats.readyOrders || 0}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-md bg-purple-500">
+              <CheckCircleIcon className="h-6 w-6 text-white" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-500">Completed</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.completedOrders || 0}
               </p>
             </div>
           </div>
@@ -261,6 +293,17 @@ const KitchenDashboard: React.FC = () => {
 
                   {/* Action Buttons */}
                   <div className="flex justify-end space-x-2">
+                    {order.status === 'PENDING' && (
+                      <button
+                        onClick={() => handleStatusUpdate(order.id, 'CONFIRMED')}
+                        disabled={updateOrderMutation.isPending}
+                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                      >
+                        <CheckCircleIcon className="h-4 w-4 mr-1" />
+                        Confirm Order
+                      </button>
+                    )}
+
                     {order.status === 'CONFIRMED' && (
                       <button
                         onClick={() => handleStatusUpdate(order.id, 'PREPARING')}
@@ -282,7 +325,18 @@ const KitchenDashboard: React.FC = () => {
                         Mark Ready
                       </button>
                     )}
-                    
+
+                    {order.status === 'READY' && (
+                      <button
+                        onClick={() => handleStatusUpdate(order.id, 'COMPLETED')}
+                        disabled={updateOrderMutation.isPending}
+                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
+                      >
+                        <CheckCircleIcon className="h-4 w-4 mr-1" />
+                        Complete Order
+                      </button>
+                    )}
+
                     <button
                       onClick={() => setSelectedOrder(order)}
                       className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

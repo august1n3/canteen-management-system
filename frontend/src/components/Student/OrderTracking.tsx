@@ -105,7 +105,7 @@ const OrderTracking: React.FC = () => {
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-green-600">
-                ${orderData.totalPrice.toFixed(2)}
+                TZS {orderData.totalPrice.toFixed(2)}
               </div>
               <div className="text-sm text-gray-600">
                 {orderData.paymentStatus}
@@ -189,7 +189,7 @@ const OrderTracking: React.FC = () => {
                   <div className="flex items-center space-x-4">
                     <span className="text-gray-600">Qty: {item.quantity}</span>
                     <span className="font-semibold">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      TZS {(item.price * item.quantity).toFixed(2)}
                     </span>
                   </div>
                 </div>

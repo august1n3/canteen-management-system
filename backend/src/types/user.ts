@@ -1,14 +1,14 @@
 export enum UserRole {
-  STUDENT = 'student',
-  CANTEEN_STAFF = 'canteen_staff',
-  ADMIN = 'admin',
-  KITCHEN = 'kitchen'
+  STUDENT = 'STUDENT',
+  CANTEEN_STAFF = 'CANTEEN_STAFF',
+  ADMIN = 'ADMIN',
+  KITCHEN = 'KITCHEN'
 }
 
 export enum UserStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  SUSPENDED = 'suspended'
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  SUSPENDED = 'SUSPENDED'
 }
 
 export interface User {

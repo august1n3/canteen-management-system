@@ -49,7 +49,7 @@ const AdminDashboard: React.FC = () => {
     },
     {
       name: 'Revenue Today',
-      value: `$${(paymentAnalytics?.data?.data?.totalRevenue || 0).toFixed(2)}`,
+      value: `TZS ${(paymentAnalytics?.data?.data?.totalRevenue || 0).toFixed(2)}`,
       change: '+15%',
       changeType: 'increase' as const,
       icon: CurrencyDollarIcon,
