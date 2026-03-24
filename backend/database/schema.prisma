@@ -112,9 +112,9 @@ model Payment {
   refundAmount        Float?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
-  userId              String
+  userId              String?
   order               Order                @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  user                User                 @relation(fields: [userId], references: [id])
+  user                User?                @relation(fields: [userId], references: [id])
 
   @@map("payments")
 }

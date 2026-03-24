@@ -231,10 +231,15 @@ router.post('/cash',
       });
 
       // Notify kitchen of confirmed order
+      const customerName = order.user 
+        ? order.user.firstName + ' ' + order.user.lastName
+        : order.guestCustomerName || 'Guest';
+      const studentId = order.user?.studentId || order.guestStudentId;
+      
       io.to('role:KITCHEN').emit('order-confirmed', {
         orderId,
-        customerName: order.user.firstName + ' ' + order.user.lastName,
-        studentId: order.user.studentId
+        customerName,
+        studentId
       });
 
       res.json({

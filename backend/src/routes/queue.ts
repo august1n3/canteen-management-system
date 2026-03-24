@@ -104,6 +104,8 @@ router.get('/position/:orderId', async (req, res, next) => {
         status: true,
         createdAt: true,
         estimatedReadyTime: true,
+        guestCustomerName: true,
+        guestStudentId: true,
         user: {
           select: {
             firstName: true,
@@ -159,14 +161,19 @@ router.get('/position/:orderId', async (req, res, next) => {
       (order.estimatedReadyTime?.getTime() || 0 - new Date().getTime()) / (1000 * 60)
     ));
 
+    const customerName = order.user
+      ? order.user.firstName + ' ' + order.user.lastName
+      : order.guestCustomerName || 'Guest';
+    const studentId = order.user?.studentId || order.guestStudentId;
+
     res.json({
       success: true,
       data: {
         inQueue: true,
         position: ordersAhead + 1,
         status: order.status,
-        customerName: order.user.firstName + ' ' + order.user.lastName,
-        studentId: order.user.studentId,
+        customerName,
+        studentId,
         estimatedWaitTime: estimatedWaitMinutes,
         estimatedCompletionTime: order.estimatedReadyTime
       }
@@ -209,6 +216,10 @@ router.patch('/priority/:orderId',
 
       // Update order priority (this could be implemented as a separate field)
       // For now, we'll log it and use it for future queue management
+      const customerName = order.user
+        ? order.user.firstName + ' ' + order.user.lastName
+        : order.guestCustomerName || 'Guest';
+        
       await prisma.systemLog.create({
         data: {
           level: 'INFO',
@@ -216,7 +227,7 @@ router.patch('/priority/:orderId',
           userId: user.id,
           context: {
             orderId: order.id,
-            customerName: order.user.firstName + ' ' + order.user.lastName,
+            customerName,
             priority: priority,
             reason: reason,
             previousStatus: order.status
