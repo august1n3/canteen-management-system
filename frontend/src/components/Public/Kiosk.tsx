@@ -69,7 +69,7 @@ const Kiosk: React.FC = () => {
 
   // Create order mutation
   const createOrderMutation = useMutation({
-    mutationFn: (orderData: any) => orderApi.createOrder(orderData),
+    mutationFn: (orderData: any) => orderApi.createGuestOrder(orderData),
     onSuccess: (data) => {
       setOrderResult(data.data.data.order);
       setCurrentStep('success');
@@ -116,15 +116,15 @@ const Kiosk: React.FC = () => {
   };
 
   const handlePlaceOrder = () => {
-    if (!customerInfo.name || !customerInfo.studentId) return;
+    if (!customerInfo.name) return;
     
     const orderData = {
       items: cartItems.map(item => ({
         menuItemId: item.menuItemId,
         quantity: item.quantity
       })),
-      customerName: customerInfo.name,
-      studentId: customerInfo.studentId
+      guestCustomerName: customerInfo.name,
+      guestStudentId: customerInfo.studentId || undefined
     };
 
     createOrderMutation.mutate(orderData);
@@ -327,7 +327,7 @@ const Kiosk: React.FC = () => {
                 <div className="space-y-6">
                   <div>
                     <label className="block text-xl font-semibold text-gray-700 mb-2">
-                      Full Name
+                      Full Name *
                     </label>
                     <input
                       type="text"
@@ -340,14 +340,14 @@ const Kiosk: React.FC = () => {
                   
                   <div>
                     <label className="block text-xl font-semibold text-gray-700 mb-2">
-                      Student ID
+                      Student ID (Optional)
                     </label>
                     <input
                       type="text"
                       value={customerInfo.studentId}
                       onChange={(e) => setCustomerInfo({ ...customerInfo, studentId: e.target.value })}
                       className="w-full px-4 py-4 text-xl border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter your student ID"
+                      placeholder="Enter your student ID (optional)"
                     />
                   </div>
                 </div>
@@ -394,7 +394,7 @@ const Kiosk: React.FC = () => {
               
               <button
                 onClick={handlePlaceOrder}
-                disabled={!customerInfo.name || !customerInfo.studentId || createOrderMutation.isPending}
+                disabled={!customerInfo.name || createOrderMutation.isPending}
                 className="bg-green-600 text-white text-xl font-semibold px-12 py-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               >
                 {createOrderMutation.isPending ? (

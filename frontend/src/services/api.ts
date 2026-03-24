@@ -124,6 +124,18 @@ export const orderApi = {
     }>;
     specialInstructions?: string;
   }) => api.post('/api/orders', data, createProtectedRequest({})),
+
+  createGuestOrder: (data: {
+    items: Array<{
+      menuItemId: string;
+      quantity: number;
+      specialInstructions?: string;
+    }>;
+    guestCustomerName: string;
+    guestPhoneNumber?: string;
+    guestStudentId?: string;
+    specialInstructions?: string;
+  }) => api.post('/api/orders/guest/create', data),
   
   updateOrderStatus: (id: string, data: {
     status: string;

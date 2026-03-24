@@ -289,6 +289,153 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res, next)
   }
 });
 
+// Create new guest order (kiosk - no authentication required)
+router.post('/guest/create', async (req, res, next) => {
+  try {
+    const { items, specialInstructions, guestCustomerName, guestPhoneNumber, guestStudentId } = req.body;
+
+    // Validate required guest info
+    if (!guestCustomerName || guestCustomerName.trim() === '') {
+      throw createError('Guest customer name is required', 400);
+    }
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      throw createError('Order items are required', 400);
+    }
+
+    // Validate all items exist and are available
+    const menuItemIds = items.map(item => item.menuItemId);
+    const menuItems = await prisma.menuItem.findMany({
+      where: {
+        id: { in: menuItemIds },
+        status: 'AVAILABLE'
+      }
+    });
+
+    if (menuItems.length !== menuItemIds.length) {
+      throw createError('Some menu items are not available', 400);
+    }
+
+    // Check stock availability
+    for (const item of items) {
+      const menuItem = menuItems.find((mi: { id: any; }) => mi.id === item.menuItemId);
+      if (!menuItem?.status || menuItem.status !== 'AVAILABLE') {
+        throw createError(`${menuItem?.name || 'Item'} is currently unavailable`, 400);
+      }
+
+      if (!menuItem || (menuItem.stockQuantity ?? 0) < item.quantity) {
+        throw createError(`Insufficient stock for ${menuItem?.name ?? 'Unknown item'}`, 400);
+      }
+    }
+
+    // Calculate total amount
+    let totalAmount = 0;
+    const orderItems = items.map(item => {
+      const menuItem = menuItems.find((mi: { id: any; }) => mi.id === item.menuItemId)!;
+      const itemTotal = menuItem.price * item.quantity;
+      totalAmount += itemTotal;
+      
+      return {
+        quantity: item.quantity,
+        price: menuItem.price,
+        specialInstructions: item.specialInstructions,
+        menuItem: {
+          connect: { id: item.menuItemId }
+        }
+      };
+    });
+
+    // Calculate estimated preparation time
+    const maxPrepTime = Math.max(
+      ...menuItems.map((item: { preparationTime: any; }) => item.preparationTime || 0)
+    );
+    const estimatedTime = new Date();
+    estimatedTime.setMinutes(estimatedTime.getMinutes() + maxPrepTime);
+
+    // Create guest order with transaction
+    const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      // Create the order
+      const newOrder = await tx.order.create({
+        data: {
+          status: OrderStatus.PENDING,
+          totalAmount,
+          specialInstructions,
+          estimatedReadyTime: estimatedTime,
+          orderNumber: `ORD-${Date.now()}`,
+          guestCustomerName: guestCustomerName.trim(),
+          guestPhoneNumber: guestPhoneNumber || undefined,
+          guestStudentId: guestStudentId || undefined,
+          items: {
+            create: orderItems
+          }
+        },
+        include: {
+          items: {
+            include: {
+              menuItem: {
+                select: {
+                  id: true,
+                  name: true,
+                  price: true,
+                  category: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Update stock levels
+      for (const item of items) {
+        await tx.menuItem.update({
+          where: { id: item.menuItemId },
+          data: {
+            stockQuantity: {
+              decrement: item.quantity
+            },
+            updatedAt: new Date()
+          }
+        });
+      }
+
+      return newOrder;
+    });
+
+    // Log order creation
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: 'ORDER_CREATED',
+        context: {
+          orderId: order.id,
+          orderType: 'GUEST',
+          itemCount: items.length,
+          totalAmount: order.totalAmount,
+          guestName: guestCustomerName
+        }
+      }
+    });
+
+    // Broadcast new order to kitchen and staff
+    io.to('role:KITCHEN').to('role:STAFF').to('role:ADMIN').emit('new-order', {
+      order: {
+        ...order,
+        items: order.items
+      }
+    });
+
+    // Send order confirmation
+    io.to(`order:${order.id}`).emit('order-created', { order });
+
+    res.status(201).json({
+      success: true,
+      data: { order }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Update order status
 router.patch('/:id/status',
   authenticateToken,
