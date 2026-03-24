@@ -196,6 +196,38 @@ export const queueApi = {
     api.post('/api/queue/cleanup', {}, createProtectedRequest({})),
 };
 
+// User API endpoints
+export const userApi = {
+  getUsers: (page: number, limit: number, filters?: {
+    role?: string;
+    status?: string;
+    search?: string;
+  }) => api.get('/api/users', createProtectedRequest({
+    params: { page, limit, ...filters }
+  })),
+  
+  getUser: (id: string) =>
+    api.get(`/api/users/${id}`, createProtectedRequest({})),
+  
+  createUser: (data: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    studentId?: string;
+  }) => api.post('/api/users', data, createProtectedRequest({})),
+  
+  updateUser: (id: string, data: any) =>
+    api.patch(`/api/users/${id}`, data, createProtectedRequest({})),
+  
+  deleteUser: (id: string) =>
+    api.delete(`/api/users/${id}`, createProtectedRequest({})),
+  
+  updateUserStatus: (id: string, status: string) =>
+    api.patch(`/api/users/${id}/status`, { status }, createProtectedRequest({})),
+};
+
 // Reports API endpoints
 export const reportsApi = {
   getDailySalesReport: (params?: { date?: string }) =>
