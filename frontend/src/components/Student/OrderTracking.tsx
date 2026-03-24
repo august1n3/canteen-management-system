@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircleIcon, ClockIcon, BeakerIcon , TruckIcon } from '@heroicons/react/outline';
 import { orderApi } from '../../services/api';
@@ -14,8 +14,9 @@ const statusSteps = [
 ];
 
 const OrderTracking: React.FC = () => {
-  const { orderId } = useParams<{ orderId: string }>();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get('orderId');
   const { socket, joinRoom } = useSocket();
 
   const { data: order, refetch, isLoading, error } = useQuery({
@@ -61,7 +62,7 @@ const OrderTracking: React.FC = () => {
             We couldn't find an order with ID: {orderId}
           </p>
           <button
-            onClick={() => navigate('/orders')}
+            onClick={() => router.push('/student/history')}
             className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors"
           >
             View Order History
@@ -208,14 +209,14 @@ const OrderTracking: React.FC = () => {
           {/* Action Buttons */}
           <div className="mt-8 flex space-x-4">
             <button
-              onClick={() => navigate('/orders')}
+              onClick={() => router.push('/student/history')}
               className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-md hover:bg-gray-300 transition-colors"
             >
               View All Orders
             </button>
             {orderData.status === 'ready' && (
               <button
-                onClick={() => navigate('/menu')}
+                onClick={() => router.push('/student')}
                 className="flex-1 bg-green-600 text-white py-3 px-6 rounded-md hover:bg-green-700 transition-colors"
               >
                 Order Again
