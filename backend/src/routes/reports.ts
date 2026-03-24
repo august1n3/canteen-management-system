@@ -336,8 +336,8 @@ async function getTopSellingItems(startDate: Date, endDate: Date, limit: number 
     }
   });
 
-  return topItems.map((item, _count ) => {
-    const menuItem = menuItems.find((mi: { id: any; }) => mi.id === item.menuItemId);
+  return topItems.map((item: any) => {
+    const menuItem = menuItems.find((mi: any) => mi.id === item.menuItemId);
     return {
       ...menuItem,
       totalQuantitySold: item._sum.quantity || 0,
@@ -363,7 +363,7 @@ async function getHourlyOrderBreakdown(startDate: Date, endDate: Date) {
 
   const hourlyData: { [hour: number]: { count: number; revenue: number } } = {};
 
-  orders.forEach((order: { createdAt: { getHours: () => any; }; totalAmount: number; }) => {
+  orders.forEach((order: any) => {
     const hour = order.createdAt.getHours();
     if (!hourlyData[hour]) {
       hourlyData[hour] = { count: 0, revenue: 0 };
@@ -397,7 +397,7 @@ async function getPaymentMethodBreakdown(startDate: Date, endDate: Date) {
     }
   });
 
-  return paymentBreakdown.map((item: { method: any; _sum: { amount: any; }; _count: { id: any; }; }) => ({
+  return paymentBreakdown.map((item: any) => ({
     method: item.method,
     totalAmount: item._sum.amount || 0,
     transactionCount: item._count.id

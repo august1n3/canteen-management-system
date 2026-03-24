@@ -1,10 +1,8 @@
 import express from 'express';
 import { prisma, io } from '../index';
+import { Prisma, PaymentStatus, OrderStatus, UserRole } from '@prisma/client';
 import { authenticateToken, AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { createError } from '../middleware/errorHandler';
-import { PaymentStatus } from '@prisma/client';
-import { OrderStatus } from '@prisma/client';
-import { UserRole} from '../types/user';
 const router = express.Router();
 
 // Get orders (with role-based filtering)
@@ -202,7 +200,7 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res, next)
     estimatedTime.setMinutes(estimatedTime.getMinutes() + maxPrepTime);
 
     // Create order with transaction
-    const order = await prisma.$transaction(async (tx) => {
+    const order = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Create the order
       const newOrder = await tx.order.create({
         data: {
@@ -415,7 +413,7 @@ router.patch('/:id/cancel', authenticateToken, async (req: AuthenticatedRequest,
     }
 
     // Cancel order and restore stock
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Update order status
       await tx.order.update({
         where: { id },

@@ -1,8 +1,8 @@
 import express from 'express';
 import { prisma, io } from '../index';
+import { OrderStatus, UserRole } from '@prisma/client';
 import { authenticateToken, AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { createError } from '../middleware/errorHandler';
-import { OrderStatus, UserRole } from '@prisma/client';
 
 
 const router = express.Router();
@@ -51,24 +51,24 @@ router.get('/status', async (req, res, next) => {
     // Calculate queue statistics
     const queueStats = {
       totalOrders: queueOrders.length,
-      pendingOrders: queueOrders.filter((o) => o.status === "PENDING").length,
-      confirmedOrders: queueOrders.filter((o) => o.status === "CONFIRMED").length,
-      preparingOrders: queueOrders.filter((o) => o.status === "PREPARING").length,
-      readyOrders: queueOrders.filter((o) => o.status === "READY").length,
+      pendingOrders: queueOrders.filter((o: any) => o.status === "PENDING").length,
+      confirmedOrders: queueOrders.filter((o: any) => o.status === "CONFIRMED").length,
+      preparingOrders: queueOrders.filter((o: any) => o.status === "PREPARING").length,
+      readyOrders: queueOrders.filter((o: any) => o.status === "READY").length,
       avgWaitTime: calculateAverageWaitTime(queueOrders),
       estimatedWaitTime: calculateEstimatedWaitTime(queueOrders)
     };
 
     // Format orders for queue display
 
-    const formattedQueue = queueOrders.map((order, index: number) => ({
+    const formattedQueue = queueOrders.map((order: any, index: number) => ({
       id: order.id,
       queuePosition: index + 1,
       customerName: `${order.user.firstName} ${order.user.lastName}`,
       studentId: order.user.studentId,
       status: order.status,
       itemCount: order.items.length,
-      items: order.items.map(item => ({
+      items: order.items.map((item: any) => ({
         name: item.menuItem.name,
         quantity: item.quantity,
         category: item.menuItem.category
@@ -380,8 +380,8 @@ router.post('/cleanup',
           message: 'ORDER_UPDATED',
           userId: req.user!.id,
           context: { 
-            orderIds: completedOrders.map(o => o.id), 
-            queuePositions: completedOrders.map(o => o.queuePosition),
+            orderIds: completedOrders.map((o: any) => o.id), 
+            queuePositions: completedOrders.map((o: any) => o.queuePosition),
             type: 'QUEUE_UPDATE'
           }
         }
@@ -452,7 +452,7 @@ async function calculateAverageProcessingTime(dateFilter: any): Promise<number> 
 
   if (completedOrders.length === 0) return 0;
 
-  const totalProcessingTime = completedOrders.reduce((total , order, createdAt) => {
+  const totalProcessingTime = completedOrders.reduce((total: number, order: any) => {
     if (order.actualReadyTime) {
       return total + (order.actualReadyTime.getTime() - order.createdAt.getTime());
     }

@@ -1,9 +1,8 @@
 import express from 'express';
 import { prisma, io } from '../index';
+import { Prisma, PaymentMethod, PaymentStatus, OrderStatus, UserRole } from '@prisma/client';
 import { authenticateToken, AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { createError } from '../middleware/errorHandler';
-import { PaymentMethod, PaymentStatus, OrderStatus} from '@prisma/client';
-import { UserRole} from '../types/user';
 const router = express.Router();
 
 // Get payment history (role-based filtering)
@@ -169,7 +168,7 @@ router.post('/cash',
       }
 
       // Create payment record and update order
-      const payment = await prisma.$transaction(async (tx) => {
+      const payment = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Create payment
         const newPayment = await tx.payment.create({
           data: {

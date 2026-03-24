@@ -14,10 +14,10 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "db:migrate": "npx prisma migrate dev",
-    "db:generate": "npx prisma generate",
+    "db:migrate": "npx prisma migrate dev --schema=./database/schema.prisma",
+    "db:generate": "npx prisma generate --schema=./database/schema.prisma",
     "db:seed": "ts-node database/seeds/seed.ts",
-    "db:reset": "npx prisma migrate reset"
+    "db:reset": "npx prisma migrate reset --schema=./database/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

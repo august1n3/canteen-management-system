@@ -1,9 +1,8 @@
 import express from 'express';
 import { prisma, io } from '../index';
+import { Prisma, MenuItemStatus, MenuItemCategory } from '@prisma/client';
 import { authenticateToken, AuthenticatedRequest, requirePermission } from '../middleware/auth';
 import { createError } from '../middleware/errorHandler';
-import { MenuItemStatus } from '@prisma/client';
-import { MenuItemCategory } from '@prisma/client';
 
 const router = express.Router();
 
@@ -98,7 +97,7 @@ router.post('/',
       }
 
       // Create menu item with availability
-      const menuItem = await prisma.$transaction(async (tx) => {
+      const menuItem = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const item = await tx.menuItem.create({
           data: {
             name,
