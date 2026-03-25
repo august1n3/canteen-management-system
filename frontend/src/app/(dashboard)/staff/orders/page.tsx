@@ -278,8 +278,8 @@ const OrderManagement: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{order.user.firstname + ' ' + order.user.lastname}</div>
-                    <div className="text-sm text-gray-500">{order.user.email}</div>
+                    <div className="text-sm text-gray-900">{order.user?.firstname ? `${order.user.firstname} ${order.user.lastname}` : (order.guestCustomerName || 'Guest')}</div>
+                    <div className="text-sm text-gray-500">{order.user?.email || order.guestPhoneNumber || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
