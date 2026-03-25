@@ -294,8 +294,8 @@ const PaymentProcessing: React.FC = () => {
                     <div className="text-sm text-gray-900">#{payment.order.orderNumber}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{payment.order.student.name}</div>
-                    <div className="text-sm text-gray-500">{payment.order.student.email}</div>
+                    <div className="text-sm text-gray-900">{payment.order.user?.name || payment.order.guestCustomerName || 'Guest'}</div>
+                    <div className="text-sm text-gray-500">{payment.order.user?.email || payment.order.guestPhoneNumber || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -430,7 +430,7 @@ const PaymentProcessing: React.FC = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-600">Order</label>
                   <p className="text-sm text-gray-900">
-                    #{selectedPayment.order.orderNumber} - {selectedPayment.order.student.name}
+                    #{selectedPayment.order.orderNumber} - {selectedPayment.order.user?.name || selectedPayment.order.guestCustomerName || 'Guest'}
                   </p>
                 </div>
 

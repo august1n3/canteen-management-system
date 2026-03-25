@@ -396,7 +396,7 @@ const OrderManagement: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-600">Customer</label>
-                    <p className="text-sm text-gray-900">{selectedOrder.user.name}</p>
+                    <p className="text-sm text-gray-900">{selectedOrder.user?.name || selectedOrder.guestCustomerName || 'Guest'}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Total</label>
