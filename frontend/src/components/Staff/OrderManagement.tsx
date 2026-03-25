@@ -277,8 +277,12 @@ const OrderManagement: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{order.student.name}</div>
-                    <div className="text-sm text-gray-500">{order.student.email}</div>
+                    <div className="text-sm text-gray-900">
+                      {order.student?.name || order.guestCustomerName || 'Guest'}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {order.student?.email || order.guestPhoneNumber || 'N/A'}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
@@ -395,7 +399,9 @@ const OrderManagement: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-600">Customer</label>
-                    <p className="text-sm text-gray-900">{selectedOrder.student.name}</p>
+                    <p className="text-sm text-gray-900">
+                      {selectedOrder.student?.name || selectedOrder.guestCustomerName || 'Guest'}
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Total</label>
@@ -409,7 +415,9 @@ const OrderManagement: React.FC = () => {
                     {selectedOrder.items.map((item: any, index: number) => (
                       <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
                         <div>
-                          <span className="font-medium">{item.menuItem.name}</span>
+                          <span className="font-medium">
+                            {item.menuItem?.name || 'Unknown Item'}
+                          </span>
                           {item.specialInstructions && (
                             <div className="text-sm text-gray-600">Note: {item.specialInstructions}</div>
                           )}
