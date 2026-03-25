@@ -42,6 +42,12 @@ const limiter = rateLimit({
   max: 100 // limit each IP to 100 requests per windowMs
 });
 
+// More lenient rate limiting for queue status (public display endpoint)
+const queueLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 60 // allow 60 requests per minute (1 request per second)
+});
+
 // Middleware
 app.use(helmet());
 app.use(cors({
@@ -50,20 +56,24 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(limiter);
 app.use(requestLogger);
 
-// Health check endpoint
+// Health check endpoint (no rate limit)
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 // API routes
+// Queue routes with custom higher rate limit for public status endpoint
+app.use('/api/queue/status', queueLimiter);
+app.use('/api/queue', queueRoutes);
+
+// Apply global rate limiter to other routes
+app.use(limiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/queue', queueRoutes);
 app.use('/api/reports', reportRoutes);
 
 // Socket.io connection handling for real-time features
