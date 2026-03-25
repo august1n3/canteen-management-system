@@ -85,7 +85,7 @@ export const requirePermission = (permission: string) => {
         'view_orders', 'view_queue', 'process_payments', 'place_order', 'view_own_orders', 'track_order'
       ],
       [UserRole.CANTEEN_STAFF]: [
-        'manage_orders', 'view_queue', 'process_payments', 'update_order_status'
+        'manage_orders', 'view_queue', 'process_payments', 'update_order_status', 'view_reports', 'manage_inventory', 'manage_menu'
       ],
       [UserRole.KITCHEN]: [
         'view_orders', 'update_order_status', 'view_queue'
