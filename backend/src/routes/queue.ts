@@ -60,24 +60,30 @@ router.get('/status', async (req, res, next) => {
     };
 
     // Format orders for queue display
-
-    const formattedQueue = queueOrders.map((order: any, index: number) => ({
-      id: order.id,
-      queuePosition: index + 1,
-      customerName: `${order.user.firstName} ${order.user.lastName}`,
-      studentId: order.user.studentId,
-      status: order.status,
-      itemCount: order.items.length,
-      items: order.items.map((item: any) => ({
-        name: item.menuItem.name,
-        quantity: item.quantity,
-        category: item.menuItem.category
-      })),
-      orderTime: order.createdAt,
-      estimatedCompletionTime: (order as any).estimatedCompletionTime ?? null,
-      totalAmount: (order as any).totalAmount ?? null,
-      waitTime: Math.floor((new Date().getTime() - order.createdAt.getTime()) / (1000 * 60)) // in minutes
-    }));
+    const formattedQueue = queueOrders.map((order: any, index: number) => {
+      const customerName = order.user 
+        ? `${order.user.firstName} ${order.user.lastName}`
+        : order.guestCustomerName || 'Guest';
+      const studentId = order.user?.studentId || order.guestStudentId;
+      
+      return {
+        id: order.id,
+        queuePosition: index + 1,
+        customerName,
+        studentId,
+        status: order.status,
+        itemCount: order.items.length,
+        items: order.items.map((item: any) => ({
+          name: item.menuItem.name,
+          quantity: item.quantity,
+          category: item.menuItem.category
+        })),
+        orderTime: order.createdAt,
+        estimatedCompletionTime: (order as any).estimatedCompletionTime ?? null,
+        totalAmount: (order as any).totalAmount ?? null,
+        waitTime: Math.floor((new Date().getTime() - order.createdAt.getTime()) / (1000 * 60)) // in minutes
+      };
+    });
 
     res.json({
       success: true,
