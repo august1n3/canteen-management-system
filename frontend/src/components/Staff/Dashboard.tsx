@@ -185,7 +185,7 @@ const Dashboard: React.FC = () => {
                         Order #{order.id.slice(-8)}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {order.user.name} • TZS {order.totalAmount.toFixed(2)}
+                        {order.user?.name || order.guestCustomerName || 'Guest'} • TZS {order.totalAmount.toFixed(2)}
                       </p>
                     </div>
                     <div className="text-right">
