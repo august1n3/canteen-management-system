@@ -7,9 +7,10 @@ import {
   CurrencyDollarIcon,
   CheckCircleIcon,
   XCircleIcon,
-  RefreshIcon
+  RefreshIcon,
+  PlusIcon
 } from '@heroicons/react/outline';
-import { paymentApi } from '../../../../services/api';
+import { paymentApi, orderApi } from '../../../../services/api';
 
 interface PaymentFilters {
   status?: string;
@@ -25,11 +26,23 @@ const PaymentProcessing: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
+  const [showRecordPayment, setShowRecordPayment] = useState(false);
+  const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<string>('');
+  const [amountReceived, setAmountReceived] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('cash');
+  const [notes, setNotes] = useState<string>('');
   const limit = 20;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['payments', filters, page, limit],
     queryFn: () => paymentApi.getPayments(page, limit, filters),
+    refetchInterval: 30000,
+  });
+
+  // Fetch unpaid orders for payment recording
+  const { data: unpaidOrdersData } = useQuery({
+    queryKey: ['unpaid-orders'],
+    queryFn: () => orderApi.getOrders(1, 100, undefined, { status: 'pending' }),
     refetchInterval: 30000,
   });
 
@@ -47,6 +60,19 @@ const PaymentProcessing: React.FC = () => {
       paymentApi.updatePaymentStatus(paymentId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payments'] });
+    }
+  });
+
+  const recordCashPaymentMutation = useMutation({
+    mutationFn: ({ orderId, amountReceived, notes }: { orderId: string; amountReceived: number; notes?: string }) =>
+      paymentApi.processCashPayment({ orderId, amountReceived, notes }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payments'] });
+      queryClient.invalidateQueries({ queryKey: ['unpaid-orders'] });
+      setShowRecordPayment(false);
+      setSelectedOrderForPayment('');
+      setAmountReceived('');
+      setNotes('');
     }
   });
 
@@ -97,6 +123,19 @@ const PaymentProcessing: React.FC = () => {
     }
   };
 
+  const handleRecordPayment = () => {
+    if (!selectedOrderForPayment || !amountReceived) {
+      alert('Please select an order and enter the amount received');
+      return;
+    }
+
+    recordCashPaymentMutation.mutate({
+      orderId: selectedOrderForPayment,
+      amountReceived: parseFloat(amountReceived),
+      notes
+    });
+  };
+
   const applyFilters = (newFilters: Partial<PaymentFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
     setPage(1);
@@ -140,6 +179,14 @@ const PaymentProcessing: React.FC = () => {
             <p className="text-gray-600">Manage payments, refunds, and transaction status</p>
           </div>
           
+          <button
+            onClick={() => setShowRecordPayment(true)}
+            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Record Payment
+          </button>
+
           {/* Summary Cards */}
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-green-50 rounded-lg p-3 text-center">
@@ -482,6 +529,118 @@ const PaymentProcessing: React.FC = () => {
                     className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
                   >
                     Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Record Payment Modal */}
+      {showRecordPayment && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Record Payment
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowRecordPayment(false);
+                    setSelectedOrderForPayment('');
+                    setAmountReceived('');
+                    setNotes('');
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XCircleIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Select Order</label>
+                  <select
+                    value={selectedOrderForPayment}
+                    onChange={(e) => setSelectedOrderForPayment(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">-- Choose an unpaid order --</option>
+                    {unpaidOrdersData?.data?.data?.orders?.map((order: any) => (
+                      <option key={order.id} value={order.id}>
+                        #{order.orderNumber} - {order.user?.name || order.guestCustomerName || 'Guest'} (TZS {order.totalAmount.toFixed(2)})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedOrderForPayment && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                    {unpaidOrdersData?.data?.data?.orders?.find((o: any) => o.id === selectedOrderForPayment) && (
+                      <p className="text-sm text-blue-900">
+                        Order Total: TZS {unpaidOrdersData.data.data.orders.find((o: any) => o.id === selectedOrderForPayment).totalAmount.toFixed(2)}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Payment Method</label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="mobile-money">Mobile Money</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Amount Received (TZS)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={amountReceived}
+                    onChange={(e) => setAmountReceived(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Notes (Optional)</label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add any notes about this payment..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowRecordPayment(false);
+                      setSelectedOrderForPayment('');
+                      setAmountReceived('');
+                      setNotes('');
+                    }}
+                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleRecordPayment}
+                    disabled={recordCashPaymentMutation.isPending || !selectedOrderForPayment || !amountReceived}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {recordCashPaymentMutation.isPending ? 'Recording...' : 'Record Payment'}
                   </button>
                 </div>
               </div>
